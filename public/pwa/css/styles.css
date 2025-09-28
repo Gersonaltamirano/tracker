@@ -29,6 +29,120 @@ body {
   line-height: 1.6;
 }
 
+/* Pantalla de Permisos */
+.permissions-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--primary-color) 0%, #0056b3 100%);
+  color: white;
+  padding: 2rem;
+}
+
+.permissions-container {
+  max-width: 500px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 3rem 2rem;
+  border-radius: 1rem;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--box-shadow-lg);
+}
+
+.permissions-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  display: block;
+}
+
+.permissions-description {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  opacity: 0.95;
+}
+
+.permissions-steps {
+  text-align: left;
+  margin: 2rem 0;
+}
+
+.permission-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.step-number {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.step-content h4 {
+  margin: 0 0 0.5rem 0;
+  color: white;
+  font-size: 1rem;
+}
+
+.step-content p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 0.9rem;
+}
+
+.permissions-status {
+  margin: 2rem 0;
+  text-align: left;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.status-icon {
+  font-size: 1.2rem;
+}
+
+.status-text {
+  opacity: 0.9;
+}
+
+.permissions-help {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  text-align: left;
+}
+
+.permissions-help p {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.permissions-help ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.permissions-help li {
+  margin: 0.25rem 0;
+  opacity: 0.9;
+  font-size: 0.9rem;
+}
+
 /* Header */
 .app-header {
   background: linear-gradient(135deg, var(--primary-color) 0%, #0056b3 100%);
@@ -478,6 +592,28 @@ body {
 
   .stats-icon {
     font-size: 1.5rem;
+  }
+
+  /* Pantalla de permisos en móvil */
+  .permissions-screen {
+    padding: 1rem;
+  }
+
+  .permissions-container {
+    padding: 2rem 1.5rem;
+  }
+
+  .permissions-icon {
+    font-size: 3rem;
+  }
+
+  .permission-step {
+    margin-bottom: 1rem;
+  }
+
+  .btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
   }
 }
 

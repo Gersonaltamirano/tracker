@@ -110,6 +110,35 @@ Asegurar que el directorio `/public` sea la raíz web y que las rutas API estén
 - Sincronización automática cuando hay conexión
 - Notificaciones de eventos incluso offline
 
+## 🔐 Configuración de Permisos
+
+### Primera Ejecución
+La PWA incluye una pantalla de configuración de permisos que te guía paso a paso:
+
+**Paso 1: Verificar GPS**
+- La app verifica automáticamente si el GPS está encendido
+- Muestra el estado del GPS en tiempo real
+
+**Paso 2: Conceder permisos de ubicación**
+- El navegador solicitará permisos de geolocalización
+- Selecciona "**Permitir todo el tiempo**" para funcionamiento en segundo plano
+- Elige la opción de ubicación "**Precisa**" para mejor accuracy
+
+**Paso 3: Configurar notificaciones (opcional)**
+- La app solicitará permisos para notificaciones de eventos
+- Puedes habilitar/deshabilitar en configuración
+
+### Si hay problemas con permisos:
+- Ve a **Configuración del navegador > Privacidad y seguridad > Ubicación**
+- Asegúrate de que la app tenga permisos "**Permitido**"
+- Usa el botón "**Verificar Permisos Nuevamente**" en configuración
+- Reinstala la PWA si es necesario
+
+### Permisos necesarios:
+- ✅ **Geolocalización precisa**: Para obtener ubicación GPS
+- ✅ **Notificaciones**: Para alertas de eventos (opcional)
+- ✅ **Almacenamiento**: Para guardar datos offline
+
 ## 🖥️ Dashboard Web
 
 ### Acceso

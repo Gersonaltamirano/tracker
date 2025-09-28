@@ -22,25 +22,91 @@
 </head>
 <body>
     <div id="app">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="container">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        <div class="gps-indicator" id="gpsIndicator"></div>
-                        <div>
-                            <h1 class="app-title">GPS Tracker</h1>
-                            <p class="app-subtitle" id="statusText">Iniciando...</p>
+        <!-- Pantalla de Permisos Inicial -->
+        <div id="permissionsScreen" class="permissions-screen">
+            <div class="permissions-container">
+                <div class="permissions-icon">📍</div>
+                <h2>Permisos de Ubicación</h2>
+                <p class="permissions-description">
+                    Para que GPS Tracker funcione correctamente, necesitamos acceso a tu ubicación GPS.
+                    Esto nos permite registrar tu velocidad y posición en tiempo real.
+                </p>
+
+                <div class="permissions-steps">
+                    <div class="permission-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Habilitar GPS</h4>
+                            <p>Asegúrate de que el GPS de tu dispositivo esté encendido</p>
                         </div>
                     </div>
-                    <div class="header-controls">
-                        <button id="startBtn" class="btn btn-primary">Iniciar</button>
-                        <button id="stopBtn" class="btn btn-danger" style="display: none;">Detener</button>
-                        <button id="settingsBtn" class="btn btn-secondary">⚙️</button>
+                    <div class="permission-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Permitir Acceso</h4>
+                            <p>Concede permisos de ubicación cuando el navegador lo solicite</p>
+                        </div>
+                    </div>
+                    <div class="permission-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Seleccionar "Preciso"</h4>
+                            <p>Elige la opción de ubicación precisa para mejor accuracy</p>
+                        </div>
                     </div>
                 </div>
+
+                <div class="permissions-status" id="permissionsStatus">
+                    <div class="status-item">
+                        <span class="status-icon" id="gpsStatus">⏳</span>
+                        <span class="status-text">Verificando GPS...</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon" id="locationStatus">⏳</span>
+                        <span class="status-text">Verificando permisos de ubicación...</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon" id="notificationStatus">⏳</span>
+                        <span class="status-text">Verificando permisos de notificaciones...</span>
+                    </div>
+                </div>
+
+                <button id="requestPermissionsBtn" class="btn btn-primary btn-lg">
+                    Solicitar Permisos
+                </button>
+
+                <div class="permissions-help">
+                    <p><strong>¿Problemas?</strong></p>
+                    <ul>
+                        <li>Ve a Configuración > Aplicaciones > GPS Tracker > Permisos</li>
+                        <li>Asegúrate de que el GPS esté activado en tu dispositivo</li>
+                        <li>Permite la ubicación "Todo el tiempo" para funcionamiento en segundo plano</li>
+                    </ul>
+                </div>
             </div>
-        </header>
+        </div>
+
+        <!-- App Principal (oculta inicialmente) -->
+        <div id="mainApp" style="display: none;">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="container">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="gps-indicator" id="gpsIndicator"></div>
+                            <div>
+                                <h1 class="app-title">GPS Tracker</h1>
+                                <p class="app-subtitle" id="statusText">Iniciando...</p>
+                            </div>
+                        </div>
+                        <div class="header-controls">
+                            <button id="startBtn" class="btn btn-primary">Iniciar</button>
+                            <button id="stopBtn" class="btn btn-danger" style="display: none;">Detener</button>
+                            <button id="settingsBtn" class="btn btn-secondary">⚙️</button>
+                        </div>
+                    </div>
+                </div>
+            </header>
 
         <!-- Main Content -->
         <main class="app-main">
@@ -171,6 +237,14 @@
                                         Inicio Automático
                                     </label>
                                 </div>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" id="recheckPermissionsBtn" class="btn btn-outline-info">
+                                    Verificar Permisos Nuevamente
+                                </button>
+                                <small class="form-text text-muted">
+                                    Útil si cambiaste los permisos en la configuración del navegador
+                                </small>
                             </div>
                         </div>
                         <div class="modal-footer">

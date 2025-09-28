@@ -30,6 +30,9 @@ class GPSTracker {
     async init() {
         console.log('Inicializando GPS Tracker...');
 
+        // Mostrar pantalla de permisos inicialmente
+        this.showPermissionsScreen();
+
         // Inicializar base de datos
         await this.initDatabase();
 
@@ -42,16 +45,15 @@ class GPSTracker {
         // Registrar service worker
         await this.registerServiceWorker();
 
-        // Solicitar permisos de notificación
-        if (this.config.notifications) {
-            await this.requestNotificationPermission();
-        }
+        // Verificar si ya tenemos permisos
+        const hasPermissions = await this.checkExistingPermissions();
 
-        // Auto-iniciar si está configurado
-        if (this.config.autoStart) {
-            setTimeout(() => {
-                this.startTracking();
-            }, 2000);
+        if (hasPermissions) {
+            // Si ya tenemos permisos, mostrar la app principal
+            this.showMainApp();
+        } else {
+            // Si no tenemos permisos, mostrar pantalla de permisos
+            this.setupPermissionRequests();
         }
 
         // Iniciar sincronización periódica
@@ -129,6 +131,18 @@ class GPSTracker {
         document.getElementById('settingsModal').addEventListener('click', (e) => {
             if (e.target === document.getElementById('settingsModal')) {
                 this.hideSettingsModal();
+            }
+        });
+
+        // Botón de verificar permisos nuevamente
+        document.getElementById('recheckPermissionsBtn')?.addEventListener('click', async () => {
+            console.log('Verificando permisos nuevamente...');
+            const hasPermissions = await this.checkExistingPermissions();
+
+            if (hasPermissions) {
+                alert('✅ Todos los permisos están concedidos correctamente');
+            } else {
+                alert('❌ Algunos permisos no están concedidos. Ve a la configuración de tu navegador para habilitarlos.');
             }
         });
 
@@ -726,6 +740,205 @@ class GPSTracker {
             case 'OFFLINE_ACTION':
                 console.log('Acción offline guardada para más tarde');
                 break;
+        }
+    }
+
+    // NUEVOS MÉTODOS PARA MANEJO DE PERMISOS
+
+    showPermissionsScreen() {
+        document.getElementById('permissionsScreen').style.display = 'flex';
+        document.getElementById('mainApp').style.display = 'none';
+    }
+
+    showMainApp() {
+        document.getElementById('permissionsScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+
+        // Iniciar rastreo automáticamente si está configurado
+        if (this.config.autoStart) {
+            setTimeout(() => {
+                this.startTracking();
+            }, 1000);
+        }
+    }
+
+    async checkExistingPermissions() {
+        console.log('Verificando permisos existentes...');
+
+        try {
+            // Verificar permisos de geolocalización
+            if (navigator.permissions) {
+                const locationPermission = await navigator.permissions.query({ name: 'geolocation' });
+                this.updateLocationStatus(locationPermission.state);
+
+                if (locationPermission.state === 'granted') {
+                    console.log('Permisos de ubicación ya concedidos');
+                } else {
+                    console.log('Permisos de ubicación:', locationPermission.state);
+                    return false;
+                }
+            }
+
+            // Verificar permisos de notificación
+            if ('Notification' in window) {
+                this.updateNotificationStatus(Notification.permission);
+                if (Notification.permission === 'granted') {
+                    console.log('Permisos de notificación ya concedidos');
+                }
+            }
+
+            // Verificar si podemos obtener la ubicación actual
+            return new Promise((resolve) => {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        console.log('Ubicación actual obtenida exitosamente');
+                        this.updateGPSStatus('active');
+                        resolve(true);
+                    },
+                    (error) => {
+                        console.log('No se pudo obtener ubicación actual:', error.message);
+                        this.updateGPSStatus('inactive');
+                        resolve(false);
+                    },
+                    { timeout: 5000 }
+                );
+            });
+
+        } catch (error) {
+            console.error('Error verificando permisos:', error);
+            return false;
+        }
+    }
+
+    setupPermissionRequests() {
+        const requestBtn = document.getElementById('requestPermissionsBtn');
+
+        requestBtn.addEventListener('click', async () => {
+            console.log('Solicitando permisos...');
+            requestBtn.textContent = 'Solicitando...';
+            requestBtn.disabled = true;
+
+            try {
+                // Solicitar permisos de geolocalización
+                await this.requestLocationPermission();
+
+                // Solicitar permisos de notificación
+                if (this.config.notifications) {
+                    await this.requestNotificationPermission();
+                }
+
+                // Verificar si todos los permisos están concedidos
+                const allGranted = await this.checkExistingPermissions();
+
+                if (allGranted) {
+                    this.showMainApp();
+                } else {
+                    requestBtn.textContent = 'Reintentar';
+                    requestBtn.disabled = false;
+                    alert('Algunos permisos no fueron concedidos. Por favor, verifica la configuración de tu navegador.');
+                }
+
+            } catch (error) {
+                console.error('Error solicitando permisos:', error);
+                requestBtn.textContent = 'Reintentar';
+                requestBtn.disabled = false;
+                alert('Error solicitando permisos. Inténtalo de nuevo.');
+            }
+        });
+    }
+
+    async requestLocationPermission() {
+        console.log('Solicitando permisos de ubicación...');
+
+        return new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    console.log('Permisos de ubicación concedidos');
+                    this.updateLocationStatus('granted');
+                    this.updateGPSStatus('active');
+                    resolve();
+                },
+                (error) => {
+                    console.error('Error de permisos de ubicación:', error);
+                    this.updateLocationStatus('denied');
+
+                    if (error.code === error.PERMISSION_DENIED) {
+                        reject(new Error('Permisos de ubicación denegados por el usuario'));
+                    } else {
+                        reject(new Error('Error obteniendo ubicación: ' + error.message));
+                    }
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 300000 // 5 minutos
+                }
+            );
+        });
+    }
+
+    updateLocationStatus(state) {
+        const statusIcon = document.getElementById('locationStatus');
+        const statusText = document.getElementById('permissionsStatus').children[1].querySelector('.status-text');
+
+        switch (state) {
+            case 'granted':
+                statusIcon.textContent = '✅';
+                statusText.textContent = 'Permisos de ubicación concedidos';
+                break;
+            case 'denied':
+                statusIcon.textContent = '❌';
+                statusText.textContent = 'Permisos de ubicación denegados';
+                break;
+            case 'prompt':
+                statusIcon.textContent = '⏳';
+                statusText.textContent = 'Solicitando permisos de ubicación...';
+                break;
+            default:
+                statusIcon.textContent = '⏳';
+                statusText.textContent = 'Verificando permisos de ubicación...';
+        }
+    }
+
+    updateNotificationStatus(state) {
+        const statusIcon = document.getElementById('notificationStatus');
+        const statusText = document.getElementById('permissionsStatus').children[2].querySelector('.status-text');
+
+        switch (state) {
+            case 'granted':
+                statusIcon.textContent = '✅';
+                statusText.textContent = 'Permisos de notificaciones concedidos';
+                break;
+            case 'denied':
+                statusIcon.textContent = '❌';
+                statusText.textContent = 'Permisos de notificaciones denegados';
+                break;
+            case 'default':
+                statusIcon.textContent = '⏳';
+                statusText.textContent = 'Permisos de notificaciones no solicitados';
+                break;
+            default:
+                statusIcon.textContent = '⏳';
+                statusText.textContent = 'Verificando permisos de notificaciones...';
+        }
+    }
+
+    updateGPSStatus(state) {
+        const statusIcon = document.getElementById('gpsStatus');
+        const statusText = document.getElementById('permissionsStatus').children[0].querySelector('.status-text');
+
+        switch (state) {
+            case 'active':
+                statusIcon.textContent = '✅';
+                statusText.textContent = 'GPS activo y funcionando';
+                break;
+            case 'inactive':
+                statusIcon.textContent = '❌';
+                statusText.textContent = 'GPS inactivo o no disponible';
+                break;
+            default:
+                statusIcon.textContent = '⏳';
+                statusText.textContent = 'Verificando GPS...';
         }
     }
 }
