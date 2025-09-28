@@ -6,7 +6,7 @@
   "license": "Commercial",
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "build": "cross-env NODE_OPTIONS=--max-old-space-size=2700 vite build"
   },
   "dependencies": {
     "@algolia/autocomplete-js": "1.19.2",
