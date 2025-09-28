@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Tracker - Sin Conexión</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .offline-container {
+            max-width: 400px;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .offline-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            margin: 0 0 1rem 0;
+            font-size: 2rem;
+        }
+
+        p {
+            margin: 0 0 2rem 0;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .retry-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .retry-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .features {
+            margin-top: 2rem;
+            text-align: left;
+        }
+
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features li {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .features li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #4ade80;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📡</div>
+        <h1>Sin Conexión</h1>
+        <p>Tu aplicación GPS Tracker está funcionando en modo offline. Los datos se guardarán localmente y se sincronizarán cuando vuelvas a tener conexión.</p>
+
+        <button class="retry-btn" onclick="window.location.reload()">
+            Reintentar Conexión
+        </button>
+
+        <div class="features">
+            <h3>Características Offline:</h3>
+            <ul>
+                <li>Rastreo GPS continuo</li>
+                <li>Almacenamiento local de datos</li>
+                <li>Detección de eventos</li>
+                <li>Sincronización automática</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Reintentar conexión periódicamente
+        setInterval(() => {
+            if (navigator.onLine) {
+                window.location.href = '/pwa/';
+            }
+        }, 5000);
+
+        // Detectar cuando vuelve la conexión
+        window.addEventListener('online', () => {
+            window.location.href = '/pwa/';
+        });
+    </script>
+</body>
+</html>

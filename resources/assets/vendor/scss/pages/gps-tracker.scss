@@ -1,0 +1,208 @@
+/* GPS Tracker Dashboard Styles */
+
+// Estadísticas cards
+.stats-card {
+  transition: transform 0.15s ease-in-out;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  .stats-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--bs-primary);
+  }
+
+  p {
+    margin: 0.5rem 0 0 0;
+    color: var(--bs-secondary);
+    font-size: 0.875rem;
+  }
+}
+
+// Gráficos
+.speed-chart-container,
+.events-chart-container {
+  .apexcharts-canvas {
+    margin: 0 auto;
+  }
+}
+
+// Tabla de eventos
+.events-table {
+  .event-type-badge {
+    font-size: 0.75rem;
+  }
+
+  .location-link {
+    color: var(--bs-primary);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .event-description {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// Mapa
+.location-map {
+  border-radius: var(--bs-border-radius);
+  overflow: hidden;
+  box-shadow: var(--bs-box-shadow-sm);
+
+  .leaflet-container {
+    height: 100%;
+    font-family: inherit;
+  }
+}
+
+// Filtros
+.filters-section {
+  background: var(--bs-gray-50);
+  border-radius: var(--bs-border-radius);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+
+  .filter-group {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+    flex-wrap: wrap;
+  }
+}
+
+// Event badges
+.badge-event {
+  &-speeding {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--bs-danger);
+    border: 1px solid rgba(220, 53, 69, 0.2);
+  }
+
+  &-acceleration {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: var(--bs-warning);
+    border: 1px solid rgba(255, 193, 7, 0.2);
+  }
+
+  &-braking {
+    background-color: rgba(23, 162, 184, 0.1);
+    color: var(--bs-info);
+    border: 1px solid rgba(23, 162, 184, 0.2);
+  }
+
+  &-crash {
+    background-color: rgba(220, 53, 69, 0.15);
+    color: var(--bs-danger);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+  }
+}
+
+// Modal de detalles de evento
+.event-details-modal {
+  .event-data-json {
+    background-color: var(--bs-gray-100);
+    border-radius: var(--bs-border-radius);
+    padding: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+}
+
+// Loading states
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: var(--bs-border-radius);
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .filters-section .filter-group {
+    flex-direction: column;
+    align-items: stretch;
+
+    .form-control,
+    .form-select {
+      width: 100%;
+    }
+  }
+
+  .stats-card {
+    margin-bottom: 1rem;
+
+    h3 {
+      font-size: 1.5rem;
+    }
+
+    .stats-icon {
+      font-size: 1.5rem;
+    }
+  }
+
+  .events-table {
+    font-size: 0.875rem;
+
+    .event-description {
+      max-width: 200px;
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .stats-card {
+    background-color: var(--bs-gray-800);
+    color: var(--bs-gray-100);
+  }
+
+  .loading-skeleton {
+    background: linear-gradient(90deg, #2d3748 25%, #374151 50%, #2d3748 75%);
+    background-size: 200% 100%;
+  }
+}
+
+// Print styles
+@media print {
+  .btn,
+  .filters-section,
+  .card-header .dropdown {
+    display: none !important;
+  }
+
+  .card {
+    break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+
+  .location-map {
+    display: none;
+  }
+}

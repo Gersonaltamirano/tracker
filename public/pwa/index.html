@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Tracker - Sistema de Monitoreo</title>
+    <meta name="description" content="Aplicación para monitorear velocidad y ubicación GPS">
+    <meta name="theme-color" content="#007bff">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/pwa/icons/icon-72x72.png">
+    <link rel="apple-touch-icon" href="/pwa/icons/icon-192x192.png">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/pwa/css/styles.css">
+
+    <!-- Dexie.js -->
+    <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="gps-indicator" id="gpsIndicator"></div>
+                        <div>
+                            <h1 class="app-title">GPS Tracker</h1>
+                            <p class="app-subtitle" id="statusText">Iniciando...</p>
+                        </div>
+                    </div>
+                    <div class="header-controls">
+                        <button id="startBtn" class="btn btn-primary">Iniciar</button>
+                        <button id="stopBtn" class="btn btn-danger" style="display: none;">Detener</button>
+                        <button id="settingsBtn" class="btn btn-secondary">⚙️</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <div class="container">
+                <!-- Current Location Card -->
+                <div class="card location-card">
+                    <div class="card-header">
+                        <h5>Ubicación Actual</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="location-info">
+                                    <div class="info-item">
+                                        <span class="label">Latitud:</span>
+                                        <span id="latitude" class="value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="label">Longitud:</span>
+                                        <span id="longitude" class="value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="label">Velocidad:</span>
+                                        <span id="speed" class="value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="label">Precisión:</span>
+                                        <span id="accuracy" class="value">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="map" class="location-map"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <div class="stats-icon speeding">🚗</div>
+                                <h3 id="speedingCount">0</h3>
+                                <p>Excesos de Velocidad</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <div class="stats-icon acceleration">⚡</div>
+                                <h3 id="accelerationCount">0</h3>
+                                <p>Aceleraciones Bruscas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <div class="stats-icon braking">🛑</div>
+                                <h3 id="brakingCount">0</h3>
+                                <p>Frenadas Bruscas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <div class="stats-icon crash">💥</div>
+                                <h3 id="crashCount">0</h3>
+                                <p>Choques</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Events Log -->
+                <div class="card events-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Eventos Recientes</h5>
+                        <button id="clearEventsBtn" class="btn btn-sm btn-outline-secondary">Limpiar</button>
+                    </div>
+                    <div class="card-body">
+                        <div id="eventsList" class="events-list">
+                            <p class="text-muted text-center">No hay eventos registrados</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Modal -->
+                <div id="settingsModal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5>Configuración</h5>
+                            <button class="modal-close">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="maxSpeed">Velocidad Máxima (km/h):</label>
+                                <input type="number" id="maxSpeed" class="form-control" min="1" max="200" value="95">
+                            </div>
+                            <div class="form-group">
+                                <label for="interval">Intervalo de Registro (segundos):</label>
+                                <input type="number" id="interval" class="form-control" min="5" max="300" value="60">
+                            </div>
+                            <div class="form-group">
+                                <label for="sensitivity">Sensibilidad de Eventos:</label>
+                                <select id="sensitivity" class="form-control">
+                                    <option value="low">Baja</option>
+                                    <option value="medium" selected>Media</option>
+                                    <option value="high">Alta</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <div class="form-check">
+                                    <input type="checkbox" id="notifications" class="form-check-input" checked>
+                                    <label for="notifications" class="form-check-label">
+                                        Notificaciones de Eventos
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="form-check">
+                                    <input type="checkbox" id="autoStart" class="form-check-input" checked>
+                                    <label for="autoStart" class="form-check-label">
+                                        Inicio Automático
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="saveSettingsBtn" class="btn btn-primary">Guardar</button>
+                            <button class="btn btn-secondary modal-close">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Sincronizando datos...</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/pwa/js/app.js"></script>
+</body>
+</html>
