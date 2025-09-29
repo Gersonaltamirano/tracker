@@ -146,10 +146,32 @@ class GPSTracker {
             }
         });
 
+        // Botón de diagnóstico
+        document.getElementById('diagnoseBtn')?.addEventListener('click', async () => {
+            console.log('Ejecutando diagnóstico de almacenamiento...');
+            await this.diagnoseStorage();
+            alert('Diagnóstico completado. Revisa la consola del navegador (F12) para ver los resultados detallados.');
+        });
+
+        // Botón de verificar actualizaciones
+        document.getElementById('updateBtn')?.addEventListener('click', () => {
+            console.log('Verificando actualizaciones manualmente...');
+            this.checkForUpdates();
+            this.showLoading('Verificando actualizaciones...');
+
+            setTimeout(() => {
+                this.hideLoading();
+                alert('Verificación completada. Revisa la consola para ver si hay actualizaciones disponibles.');
+            }, 2000);
+        });
+
         // Manejar mensajes del service worker
         navigator.serviceWorker?.addEventListener('message', (event) => {
             this.handleServiceWorkerMessage(event.data);
         });
+
+        // Verificar actualizaciones periódicamente
+        this.startUpdateChecker();
     }
 
     async registerServiceWorker() {
@@ -740,6 +762,76 @@ class GPSTracker {
             case 'OFFLINE_ACTION':
                 console.log('Acción offline guardada para más tarde');
                 break;
+            case 'SW_UPDATE_AVAILABLE':
+                console.log('Nueva versión del Service Worker disponible:', data.version);
+                this.showUpdateNotification(data.version);
+                break;
+            case 'NEW_VERSION_AVAILABLE':
+                console.log('Nueva versión de la aplicación disponible:', data.newVersion);
+                this.showAppUpdateNotification(data.currentVersion, data.newVersion);
+                break;
+        }
+    }
+
+    startUpdateChecker() {
+        // Verificar actualizaciones cada 10 minutos
+        setInterval(() => {
+            this.checkForUpdates();
+        }, 10 * 60 * 1000);
+
+        // Verificar actualizaciones cuando la app se vuelve visible
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                this.checkForUpdates();
+            }
+        });
+    }
+
+    async checkForUpdates() {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            console.log('Verificando actualizaciones...');
+
+            // Pedir la versión actual al service worker
+            const messageChannel = new MessageChannel();
+
+            messageChannel.port1.onmessage = (event) => {
+                console.log('Versión del Service Worker:', event.data);
+            };
+
+            navigator.serviceWorker.controller.postMessage(
+                { type: 'GET_VERSION' },
+                [messageChannel.port2]
+            );
+
+            // Verificar manualmente si hay actualizaciones
+            navigator.serviceWorker.controller.postMessage({ type: 'CHECK_FOR_UPDATE' });
+        }
+    }
+
+    showUpdateNotification(newVersion) {
+        const notification = new Notification('GPS Tracker Actualizado', {
+            body: `Nueva versión ${newVersion} disponible. Recarga la aplicación para aplicar los cambios.`,
+            icon: '/pwa/icons/icon-192x192.png',
+            badge: '/pwa/icons/icon-72x72.png',
+            tag: 'app-update',
+            requireInteraction: true,
+            actions: [
+                { action: 'reload', title: 'Recargar Ahora' },
+                { action: 'later', title: 'Más Tarde' }
+            ]
+        });
+
+        notification.onclick = (event) => {
+            if (event.action === 'reload') {
+                window.location.reload();
+            }
+            notification.close();
+        };
+    }
+
+    showAppUpdateNotification(currentVersion, newVersion) {
+        if (confirm(`Nueva versión disponible: ${newVersion}\n\nVersión actual: ${currentVersion}\n\n¿Deseas recargar la aplicación para actualizar?`)) {
+            window.location.reload();
         }
     }
 
