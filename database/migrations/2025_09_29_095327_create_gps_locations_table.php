@@ -29,7 +29,9 @@ return new class extends Migration
             // Índices
             $table->index(['session_id', 'synced']);
             $table->index('recorded_at');
-            $table->spatialIndex(['latitude', 'longitude']);
+            $table->index(['latitude', 'longitude']);
+            $table->index('latitude');
+            $table->index('longitude');
         });
     }
 
