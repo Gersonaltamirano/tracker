@@ -70,6 +70,21 @@
         </div>
     </div>
 
+    <!-- Banner de Instalación Manual (para Android) -->
+    <div x-show="showInstallBanner" x-transition class="install-banner">
+        <div class="install-banner-content">
+            <div class="install-banner-icon">📱</div>
+            <div class="install-banner-text">
+                <h4>Instalar GPS Tracker</h4>
+                <p>Agrega esta aplicación a tu pantalla principal para un acceso rápido</p>
+            </div>
+            <div class="install-banner-actions">
+                <button @click="installPwa()" class="btn btn-primary btn-sm">Instalar</button>
+                <button @click="dismissInstallBanner()" class="btn btn-secondary btn-sm">Más tarde</button>
+            </div>
+        </div>
+    </div>
+
     <!-- App Principal -->
     <div x-show="!showPermissionsScreen" x-transition x-cloak>
         <!-- Header -->
@@ -279,6 +294,8 @@
                 loading: false,
                 loadingMessage: 'Cargando...',
                 requestingPermissions: false,
+                showInstallBanner: false,
+                deferredPrompt: null,
 
                 // Configuración
                 config: @js($config),
@@ -313,6 +330,9 @@
 
                     // Inicializar GPS Tracker JS
                     this.initializeGpsTracker();
+
+                    // Configurar instalación PWA
+                    this.setupPwaInstallation();
                 },
 
                 async initializeGpsTracker() {
@@ -588,8 +608,197 @@
                     } else {
                         alert('❌ Algunos permisos no están concedidos. Ve a la configuración del navegador.');
                     }
+                },
+
+                setupPwaInstallation() {
+                    // Escuchar evento beforeinstallprompt de Android
+                    window.addEventListener('beforeinstallprompt', (e) => {
+                        console.log('PWA: beforeinstallprompt event fired');
+                        e.preventDefault();
+                        this.deferredPrompt = e;
+
+                        // Verificar si el usuario ya desechó el banner recientemente
+                        const dismissedTime = localStorage.getItem('pwa-install-dismissed');
+                        if (dismissedTime) {
+                            const hoursSinceDismissed = (Date.now() - parseInt(dismissedTime)) / (1000 * 60 * 60);
+                            if (hoursSinceDismissed < 24) {
+                                console.log('PWA: Install banner dismissed recently');
+                                return;
+                            }
+                        }
+
+                        this.showInstallBanner = true;
+                    });
+
+                    // Escuchar evento de instalación exitosa
+                    window.addEventListener('appinstalled', () => {
+                        console.log('PWA: App installed successfully');
+                        this.showInstallBanner = false;
+                        this.deferredPrompt = null;
+                        alert('¡Aplicación instalada exitosamente! 🎉');
+                    });
+
+                    // Verificar si ya está instalada
+                    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+                        console.log('PWA: Already installed');
+                        this.showInstallBanner = false;
+                    } else {
+                        // Mostrar banner después de 30 segundos si no aparece el prompt automático
+                        setTimeout(() => {
+                            const dismissedTime = localStorage.getItem('pwa-install-dismissed');
+                            if (dismissedTime) {
+                                const hoursSinceDismissed = (Date.now() - parseInt(dismissedTime)) / (1000 * 60 * 60);
+                                if (hoursSinceDismissed < 24) return;
+                            }
+
+                            if (!this.deferredPrompt && !this.showInstallBanner) {
+                                this.showInstallBanner = true;
+                            }
+                        }, 30000);
+                    }
+                },
+
+                async installPwa() {
+                    if (this.deferredPrompt) {
+                        // Usar el prompt automático de Android
+                        this.deferredPrompt.prompt();
+                        const { outcome } = await this.deferredPrompt.userChoice;
+
+                        if (outcome === 'accepted') {
+                            console.log('PWA: User accepted the install prompt');
+                            this.deferredPrompt = null;
+                            this.showInstallBanner = false;
+                        }
+                    } else {
+                        // Fallback: instrucciones manuales
+                        this.showInstallInstructions();
+                    }
+                },
+
+                showInstallInstructions() {
+                    const isAndroid = /Android/i.test(navigator.userAgent);
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+                    let message = 'Para instalar la aplicación:\n\n';
+
+                    if (isAndroid) {
+                        message += '1. Toca el botón de menú (⋮) en Chrome\n';
+                        message += '2. Selecciona "Instalar aplicación" o "Agregar a pantalla principal"\n';
+                        message += '3. Confirma la instalación';
+                    } else if (isIOS) {
+                        message += '1. Toca el botón de compartir (□) en Safari\n';
+                        message += '2. Selecciona "Agregar a pantalla principal"\n';
+                        message += '3. Confirma para crear el ícono';
+                    } else {
+                        message += '1. Usa el botón de instalar del navegador\n';
+                        message += '2. O agrega manualmente a la pantalla principal';
+                    }
+
+                    alert(message);
+                },
+
+                dismissInstallBanner() {
+                    this.showInstallBanner = false;
+                    // Recordar que el usuario desechó el banner por 24 horas
+                    localStorage.setItem('pwa-install-dismissed', Date.now().toString());
                 }
             }
         }
     </script>
+
+    <style>
+        /* Banner de instalación PWA */
+        .install-banner {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3);
+            z-index: 1000;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .install-banner-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .install-banner-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .install-banner-text {
+            flex: 1;
+        }
+
+        .install-banner-text h4 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .install-banner-text p {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .install-banner-actions {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .install-banner .btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .install-banner .btn-primary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .install-banner .btn-primary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .install-banner .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .install-banner .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .install-banner {
+                max-width: 400px;
+                left: auto;
+                right: 20px;
+            }
+        }
+    </style>
 </div>

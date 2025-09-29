@@ -4,61 +4,57 @@
   "description": "Aplicación para monitorear velocidad y ubicación GPS",
   "version": "1.0.0",
   "start_url": "/pwa/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#007bff",
-  "orientation": "portrait-primary",
   "categories": ["navigation", "utilities"],
   "lang": "es",
   "dir": "ltr",
   "icons": [
     {
-      "src": "/pwa/icons/icon-72x72.png",
+      "src": "/pwa/icons/icon-72x72.svg",
       "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "/pwa/icons/icon-96x96.png",
+      "src": "/pwa/icons/icon-96x96.svg",
       "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "/pwa/icons/icon-128x128.png",
+      "src": "/pwa/icons/icon-128x128.svg",
       "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "/pwa/icons/icon-144x144.png",
+      "src": "/pwa/icons/icon-144x144.svg",
       "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "/pwa/icons/icon-152x152.png",
+      "src": "/pwa/icons/icon-152x152.svg",
       "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "/pwa/icons/icon-192x192.png",
+      "src": "/pwa/icons/icon-192x192.svg",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "/pwa/icons/icon-384x384.png",
+      "src": "/pwa/icons/icon-384x384.svg",
       "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "/pwa/icons/icon-512x512.png",
+      "src": "/pwa/icons/icon-512x512.svg",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ],
   "screenshots": [
@@ -111,5 +107,21 @@
   "launch_handler": {
     "client_mode": "navigate-existing"
   },
-  "display_override": ["window-controls-overlay", "standalone", "browser"]
+  "display_override": ["window-controls-overlay", "standalone", "browser"],
+  "protocol_handlers": [],
+  "file_handlers": [],
+  "share_target": {
+    "action": "/pwa/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "display": "standalone",
+  "theme_color": "#007bff",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary"
 }

@@ -5,6 +5,12 @@ const CACHE_NAME = `gps-tracker-app-${CACHE_VERSION}`;
 const API_CACHE = `gps-tracker-api-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `gps-tracker-dynamic-${CACHE_VERSION}`;
 
+// Configuración para instalación PWA
+const PWA_CONFIG = {
+    scope: '/pwa/',
+    updateViaCache: 'none'
+};
+
 // Configuración de cache
 const CACHE_STRATEGIES = {
   // Archivos que siempre deben ser los más recientes
@@ -485,7 +491,22 @@ self.addEventListener('notificationclick', (event) => {
 
   if (event.action === 'explore') {
     event.waitUntil(
-      clients.openWindow('/pwa/dashboard')
+      clients.openWindow('/pwa/')
     );
   }
+});
+
+// Manejar instalación exitosa
+self.addEventListener('appinstalled', (event) => {
+  console.log('Service Worker: App installed successfully');
+
+  // Notificar a los clientes sobre la instalación
+  self.clients.matchAll().then((clients) => {
+    clients.forEach((client) => {
+      client.postMessage({
+        type: 'APP_INSTALLED',
+        message: 'Aplicación instalada exitosamente'
+      });
+    });
+  });
 });
