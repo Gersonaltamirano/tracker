@@ -359,7 +359,19 @@ Route::get('/maps/leaflet', [Leaflet::class, 'index'])->name('maps-leaflet');
 Route::get('/laravel/user-management', [UserManagement::class, 'UserManagement'])->name('laravel-example-user-management');
 Route::resource('/user-list', UserManagement::class);
 
-// GPS Tracker Dashboard
+// GPS Tracker PWA
+Route::prefix('pwa')->name('pwa.')->group(function () {
+    Route::get('/', [App\Http\Controllers\PwaController::class, 'index'])->name('index');
+    Route::post('/location-data', [App\Http\Controllers\PwaController::class, 'saveLocationData'])->name('location.save');
+    Route::post('/event-data', [App\Http\Controllers\PwaController::class, 'saveEventData'])->name('event.save');
+    Route::post('/location-data/batch', [App\Http\Controllers\PwaController::class, 'batchLocationData'])->name('location.batch');
+    Route::post('/location-events/batch', [App\Http\Controllers\PwaController::class, 'batchEventData'])->name('events.batch');
+    Route::get('/config', [App\Http\Controllers\PwaController::class, 'getConfiguration'])->name('config.get');
+    Route::post('/config', [App\Http\Controllers\PwaController::class, 'saveConfiguration'])->name('config.save');
+    Route::get('/manifest.json', [App\Http\Controllers\PwaController::class, 'manifest'])->name('manifest');
+});
+
+// GPS Tracker Dashboard (existente)
 Route::get('/gps-tracker', [App\Http\Controllers\dashboard\GPSTrackerController::class, 'index'])->name('gps-tracker-dashboard');
 Route::get('/gps-tracker/data/locations', [App\Http\Controllers\dashboard\GPSTrackerController::class, 'getLocationData'])->name('gps-tracker-locations');
 Route::get('/gps-tracker/data/events', [App\Http\Controllers\dashboard\GPSTrackerController::class, 'getEventsData'])->name('gps-tracker-events');

@@ -21,8 +21,8 @@ class GPSTracker {
             autoStart: true
         };
 
-        // Base URL de la API
-        this.apiBaseUrl = 'https://gps-tracker.srv-sa.com/api';
+        // Base URL de la API (Laravel)
+        this.apiBaseUrl = window.location.origin;
 
         this.init();
     }
@@ -567,10 +567,15 @@ class GPSTracker {
         console.log(`Sincronizando ${unsyncedData.length} registros de ubicación`);
 
         try {
-            const response = await fetch(`${this.apiBaseUrl}/location-data/batch`, {
+            // Obtener CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            const response = await fetch(`${this.apiBaseUrl}/pwa/location-data/batch`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken || '',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({ locations: unsyncedData })
             });
@@ -585,9 +590,18 @@ class GPSTracker {
 
                 // Limpiar datos antiguos (mantener solo últimos 1000)
                 await this.cleanupOldData();
+            } else {
+                console.error('Error en respuesta del servidor:', response.status, response.statusText);
+                const errorText = await response.text();
+                console.error('Respuesta de error:', errorText);
             }
         } catch (error) {
             console.error('Error sincronizando ubicaciones:', error);
+            console.error('Detalles del error:', {
+                name: error.name,
+                message: error.message,
+                stack: error.stack
+            });
         }
     }
 
@@ -599,10 +613,15 @@ class GPSTracker {
         console.log(`Sincronizando ${unsyncedEvents.length} eventos`);
 
         try {
-            const response = await fetch(`${this.apiBaseUrl}/location-events/batch`, {
+            // Obtener CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            const response = await fetch(`${this.apiBaseUrl}/pwa/location-events/batch`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken || '',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({ events: unsyncedEvents })
             });
@@ -614,9 +633,18 @@ class GPSTracker {
                 // Marcar como sincronizados
                 const ids = unsyncedEvents.map(item => item.id);
                 await this.db.locationEvents.where('id').anyOf(ids).modify({ synced: true });
+            } else {
+                console.error('Error en respuesta del servidor para eventos:', response.status, response.statusText);
+                const errorText = await response.text();
+                console.error('Respuesta de error para eventos:', errorText);
             }
         } catch (error) {
             console.error('Error sincronizando eventos:', error);
+            console.error('Detalles del error:', {
+                name: error.name,
+                message: error.message,
+                stack: error.stack
+            });
         }
     }
 
